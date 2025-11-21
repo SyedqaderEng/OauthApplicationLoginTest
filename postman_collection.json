@@ -1,0 +1,574 @@
+{
+  "info": {
+    "name": "OAuth2 + OIDC Test Platform",
+    "description": "Complete OAuth2 and OpenID Connect testing collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_secret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authorization_code",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "OpenID Connect Discovery",
+      "item": [
+        {
+          "name": "Get Discovery Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/.well-known/openid-configuration",
+              "host": ["{{base_url}}"],
+              "path": [".well-known", "openid-configuration"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get JWKS",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jwks",
+              "host": ["{{base_url}}"],
+              "path": ["jwks"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Client Registration",
+      "item": [
+        {
+          "name": "Register New Client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Application\",\n  \"redirect_uris\": [\n    \"http://localhost:3000/callback\",\n    \"http://localhost:8080/callback\"\n  ],\n  \"scopes\": [\"openid\", \"profile\", \"email\"],\n  \"grant_types\": [\"authorization_code\", \"refresh_token\"],\n  \"token_endpoint_auth_method\": \"client_secret_basic\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/oauth/register",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Registered Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/oauth/clients",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "clients"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OAuth2 Authorization Code Flow",
+      "item": [
+        {
+          "name": "1. Authorization Request (Browser)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/oauth/authorize?client_id={{client_id}}&response_type=code&redirect_uri=http://localhost:3000/callback&scope=openid profile email&state=random_state_123&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&code_challenge_method=S256",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "authorize"],
+              "query": [
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "response_type",
+                  "value": "code"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:3000/callback"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid profile email"
+                },
+                {
+                  "key": "state",
+                  "value": "random_state_123"
+                },
+                {
+                  "key": "code_challenge",
+                  "value": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+                },
+                {
+                  "key": "code_challenge_method",
+                  "value": "S256"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Exchange Code for Token (PKCE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "{{authorization_code}}",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:3000/callback",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/oauth/token",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "token"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2b. Exchange Code for Token (With Secret)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "{{authorization_code}}",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:3000/callback",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/oauth/token",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "token"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Client Credentials Flow",
+      "item": [
+        {
+          "name": "Get Access Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "api:read api:write",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/oauth/token",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "token"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Refresh Token Flow",
+      "item": [
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token",
+                  "type": "text"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{refresh_token}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/oauth/token",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "token"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Resource Access",
+      "item": [
+        {
+          "name": "Get UserInfo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/oauth/userinfo",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "userinfo"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Introspect Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/oauth/introspect",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "introspect"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "text"
+                },
+                {
+                  "key": "token_type_hint",
+                  "value": "access_token",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/oauth/revoke",
+              "host": ["{{base_url}}"],
+              "path": ["oauth", "revoke"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OAuth Provider Management",
+      "item": [
+        {
+          "name": "Add External Provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Google\",\n  \"issuer\": \"https://accounts.google.com\",\n  \"clientId\": \"your-client-id\",\n  \"clientSecret\": \"your-client-secret\",\n  \"scopes\": [\"openid\", \"profile\", \"email\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/providers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "providers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/providers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "providers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Provider Discovery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"issuer\": \"https://accounts.google.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/providers/test",
+              "host": ["{{base_url}}"],
+              "path": ["api", "providers", "test"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

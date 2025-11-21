@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: oauth-platform-db
+    environment:
+      POSTGRES_USER: oauth_user
+      POSTGRES_PASSWORD: oauth_pass
+      POSTGRES_DB: oauth_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oauth_user -d oauth_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - oauth-network
+
+  # Backend Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: oauth-platform-backend
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://oauth_user:oauth_pass@postgres:5432/oauth_platform
+      SESSION_SECRET: change-this-super-secret-session-key-in-production
+      JWT_SECRET: change-this-jwt-secret-in-production
+      ISSUER: http://localhost:4000
+      BASE_URL: http://localhost:4000
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - oauth-network
+    command: sh -c "npx prisma migrate deploy && npm start"
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: oauth-platform-frontend
+    environment:
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - oauth-network
+
+volumes:
+  postgres_data:
+
+networks:
+  oauth-network:
+    driver: bridge

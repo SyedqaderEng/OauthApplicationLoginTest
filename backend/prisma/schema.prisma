@@ -1,0 +1,145 @@
+// Prisma Schema for OAuth2 + OIDC Test Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users table - for local authentication
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+
+  // Relations
+  oauthTokens   OauthToken[]
+  oauthLogs     OauthLog[]
+
+  @@map("users")
+}
+
+// OAuth Clients - registered applications that can use this server as IdP
+model OauthClient {
+  id                      String   @id @default(uuid())
+  clientId                String   @unique @map("client_id")
+  clientSecretHash        String?  @map("client_secret_hash")
+  name                    String
+  redirectUris            Json     @map("redirect_uris") // Array of allowed redirect URIs
+  scopes                  Json     @default("[]") // Array of allowed scopes
+  grantTypes              Json     @map("grant_types") // Array of grant types
+  tokenEndpointAuthMethod String   @default("client_secret_basic") @map("token_endpoint_auth_method")
+  active                  Boolean  @default(true)
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  oauthTokens             OauthToken[]
+
+  @@map("oauth_clients")
+}
+
+// OAuth Tokens - issued tokens by this server or received from external providers
+model OauthToken {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  clientId     String?  @map("client_id")
+  accessToken  String   @map("access_token") @db.Text
+  refreshToken String?  @map("refresh_token") @db.Text
+  idToken      String?  @map("id_token") @db.Text
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  scope        String?
+  tokenType    String   @default("Bearer") @map("token_type")
+
+  // Additional metadata
+  authorizationCode String? @map("authorization_code")
+  codeChallenge     String? @map("code_challenge")
+  codeChallengeMethod String? @map("code_challenge_method")
+
+  // Relations
+  user         User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client       OauthClient? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([accessToken])
+  @@index([authorizationCode])
+  @@map("oauth_tokens")
+}
+
+// OAuth Providers - external OAuth/OIDC providers for client mode
+model OauthProvider {
+  id                String   @id @default(uuid())
+  name              String
+  issuer            String
+  discoveryUrl      String?  @map("discovery_url")
+  authEndpoint      String   @map("auth_endpoint")
+  tokenEndpoint     String   @map("token_endpoint")
+  userinfoEndpoint  String?  @map("userinfo_endpoint")
+  jwksUri           String?  @map("jwks_uri")
+  clientId          String   @map("client_id")
+  clientSecret      String   @map("client_secret")
+  scopes            Json     @default("[\"openid\", \"profile\", \"email\"]")
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("oauth_providers")
+}
+
+// OAuth Logs - event logging for debugging
+model OauthLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  eventType   String   @map("event_type") // e.g., 'authorize_request', 'token_issued', 'token_validated'
+  status      String   // 'success' or 'failure'
+  details     Json     @default("{}")
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("oauth_logs")
+}
+
+// App Config - application mode and settings
+model AppConfig {
+  id           String   @id @default(uuid())
+  appMode      String   @default("BOTH") @map("app_mode") // 'AS' | 'CLIENT' | 'BOTH'
+  issuer       String   @default("http://localhost:4000")
+  signingKeys  Json     @map("signing_keys") // RSA/EC keys for JWT signing
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("app_config")
+}
+
+// Authorization Codes - temporary codes for authorization code flow
+model AuthorizationCode {
+  id                  String   @id @default(uuid())
+  code                String   @unique
+  clientId            String   @map("client_id")
+  userId              String   @map("user_id")
+  redirectUri         String   @map("redirect_uri")
+  scope               String?
+  codeChallenge       String?  @map("code_challenge")
+  codeChallengeMethod String?  @map("code_challenge_method")
+  expiresAt           DateTime @map("expires_at")
+  used                Boolean  @default(false)
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([code])
+  @@index([clientId])
+  @@map("authorization_codes")
+}
