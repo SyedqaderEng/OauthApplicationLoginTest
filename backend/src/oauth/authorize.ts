@@ -1,7 +1,6 @@
 // OAuth2 Authorization Endpoint
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 
 const prisma = new PrismaClient();
@@ -16,7 +15,6 @@ export const authorizeEndpoint = async (req: Request, res: Response) => {
       state,
       code_challenge,
       code_challenge_method,
-      nonce,
     } = req.query;
 
     // Validate required parameters

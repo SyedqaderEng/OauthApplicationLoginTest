@@ -168,7 +168,7 @@ export const login = async (req: Request, res: Response) => {
 };
 
 // Logout endpoint
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.session.userId;
 
@@ -251,12 +251,13 @@ export const requireAuth = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   if (!req.session.userId) {
-    return res.status(401).json({
+    res.status(401).json({
       error: 'unauthorized',
       message: 'Authentication required',
     });
+    return;
   }
   next();
 };
