@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
-import { Plus, Users, Trash2, Key, Copy, CheckCircle } from 'lucide-react';
+import { Plus, Users, Trash2, Copy, CheckCircle } from 'lucide-react';
 
 export default function RegisteredClients() {
   const [clients, setClients] = useState<any[]>([]);

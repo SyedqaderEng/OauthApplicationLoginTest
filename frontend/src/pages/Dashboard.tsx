@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 import Layout from '../components/Layout';
 import {
   Key,
@@ -8,8 +7,6 @@ import {
   CheckCircle,
   AlertCircle,
   RefreshCw,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 
 interface DashboardProps {

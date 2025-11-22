@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 import Layout from '../components/Layout';
 import { Key, Eye, EyeOff, Copy, CheckCircle } from 'lucide-react';
 
@@ -26,18 +25,6 @@ export default function TokenViewer() {
       console.error('Error fetching tokens:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const decodeToken = (token: string) => {
-    try {
-      const fullToken = token.includes('...')
-        ? null
-        : token;
-      if (!fullToken) return null;
-      return jwtDecode(fullToken);
-    } catch (error) {
-      return null;
     }
   };
 

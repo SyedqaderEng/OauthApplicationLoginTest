@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Lock, Mail, AlertCircle, UserPlus, Key } from 'lucide-react';
+import { Lock, Mail, AlertCircle, UserPlus } from 'lucide-react';
 
 interface SignupProps {
   onSignup: () => void;

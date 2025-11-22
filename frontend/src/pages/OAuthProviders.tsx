@@ -5,7 +5,6 @@ import {
   Plus,
   Server,
   Trash2,
-  Edit,
   CheckCircle,
   XCircle,
   ExternalLink,
