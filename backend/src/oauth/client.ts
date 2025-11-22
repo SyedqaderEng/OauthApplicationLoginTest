@@ -1,10 +1,7 @@
 // OAuth2/OIDC Client Implementation
-import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
 import { jwksManager } from './jwks';
-
-const prisma = new PrismaClient();
 
 // Generate PKCE verifier and challenge
 export function generatePKCE(): {

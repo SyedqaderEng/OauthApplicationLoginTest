@@ -99,7 +99,7 @@ declare module 'express-session' {
 })();
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
@@ -111,7 +111,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.get('/.well-known/openid-configuration', getDiscoveryDocument);
 
 // JWKS endpoint
-app.get('/jwks', async (req: Request, res: Response) => {
+app.get('/jwks', async (_req: Request, res: Response) => {
   const jwks = await jwksManager.getPublicJWKS();
   res.json(jwks);
 });
@@ -179,7 +179,7 @@ app.get('/api/oauth/callback', handleOAuthCallback);
 // APP CONFIGURATION
 // ============================================
 
-app.get('/api/config', requireAuth, async (req: Request, res: Response) => {
+app.get('/api/config', requireAuth, async (_req: Request, res: Response) => {
   try {
     const config = await prisma.appConfig.findFirst();
 
@@ -244,7 +244,7 @@ app.put('/api/config', requireAuth, async (req: Request, res: Response) => {
 // ERROR HANDLING
 // ============================================
 
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     error: 'not_found',
     message: 'Endpoint not found',
@@ -255,9 +255,9 @@ app.use((req: Request, res: Response) => {
 app.use(
   (
     err: Error,
-    req: Request,
+    _req: Request,
     res: Response,
-    next: express.NextFunction
+    _next: express.NextFunction
   ) => {
     console.error('Unhandled error:', err);
     res.status(500).json({

@@ -61,7 +61,7 @@ export const registerClient = async (req: Request, res: Response) => {
 };
 
 // Get all registered clients (admin only)
-export const getClients = async (req: Request, res: Response) => {
+export const getClients = async (_req: Request, res: Response) => {
   try {
     const clients = await prisma.oauthClient.findMany({
       select: {

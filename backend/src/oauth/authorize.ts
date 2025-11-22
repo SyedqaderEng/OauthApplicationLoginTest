@@ -102,7 +102,8 @@ export const authorizeEndpoint = async (req: Request, res: Response) => {
     }
 
     // For implicit flow (token or id_token in response_type)
-    if (response_type.includes('token') || response_type.includes('id_token')) {
+    const responseTypeStr = String(response_type || '');
+    if (responseTypeStr.includes('token') || responseTypeStr.includes('id_token')) {
       return res.status(400).json({
         error: 'unsupported_response_type',
         error_description: 'Implicit flow not fully implemented in this example',
