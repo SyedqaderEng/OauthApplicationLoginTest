@@ -175,10 +175,11 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     req.session.destroy((err) => {
       if (err) {
         console.error('Session destruction error:', err);
-        return res.status(500).json({
+        res.status(500).json({
           error: 'server_error',
           message: 'Failed to logout',
         });
+        return;
       }
 
       // Log logout
@@ -195,14 +196,14 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
         });
       }
 
-      return res.json({
+      res.json({
         success: true,
         message: 'Logged out successfully',
       });
     });
   } catch (error) {
     console.error('Logout error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       error: 'server_error',
       message: 'Internal server error',
     });
